@@ -5,7 +5,7 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def main(data_file: Path, plot_dir: Path, show: bool):
+def main(data_file: Path, plot_dir: Path, plot_name: str, show: bool):
     df = pd.read_csv(data_file, sep=r'\s+')
 
     df["time_ns"] = df["time"] * 1e9
@@ -21,7 +21,7 @@ def main(data_file: Path, plot_dir: Path, show: bool):
     plt.legend()
     plt.grid(True)
 
-    plot_dir  = plot_dir / "tran.png"
+    plot_dir  = plot_dir / f"{plot_name}.png"
     plt.savefig(plot_dir)
 
     print(f"Saved plot to '{plot_dir.as_posix()}'")
@@ -31,14 +31,16 @@ def main(data_file: Path, plot_dir: Path, show: bool):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plots the transient analysis of an SRAM sense amplifier and stores the result in 'plots'")
-    parser.add_argument("-i", "--input", help="path to the file containing the data", default="../xschem/simulation/data.txt")
+    parser.add_argument("-i", "--input", help="path to the file containing the data", default="../xschem/simulations/data.txt")
     parser.add_argument("-o", "--output", help="path to directory in which to store the plot", default="../plots")
+    parser.add_argument("-n", "--name", help="name of plot", default="tran")
     parser.add_argument("-s", "--show", help="show plot on execution", action="store_true")
 
     args = parser.parse_args()
 
     data_file: Path = Path(args.input)
     plot_dir: Path = Path(args.output)
+    plot_name: str = args.name
 
     if not data_file.exists():
         print(f"ERROR: '{data_file.as_posix()}' does not exist")
@@ -52,4 +54,4 @@ if __name__ == "__main__":
         print(f"WARNING: '{plot_dir.as_posix()}' does not exist")
         print(f"Creating '{plot_dir.as_posix()}'")
 
-    main(data_file, plot_dir, args.show)
+    main(data_file, plot_dir, plot_name, args.show)
