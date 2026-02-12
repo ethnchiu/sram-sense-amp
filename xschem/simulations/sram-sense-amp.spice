@@ -3,12 +3,10 @@
 V1 VDD GND {VDD}
 V4 SE GND PULSE(0 {VDD} {T_read + D_se} {T_rise} {T_rise} 1n 10n)
 XM8 net2 SE GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
-XM9 OUT net3 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
-XM1 net1 BLB net2 net2 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
-XM3 net3 net1 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
-XM2 net1 net1 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
-XM6 OUT net3 GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
-XM4 net3 BL net2 net2 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
+XM1 OUT net1 net2 net2 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
+XM3 net1 OUT VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM2 OUT net1 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM4 net1 OUT net2 net2 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 XM5 q qbar VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
 XM7 qbar q VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
 XM10 q qbar GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
@@ -18,6 +16,8 @@ XM13 BLB WL qbar GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 C1 BL GND 0.5p m=1
 C2 BLB GND 0.5p m=1
 V5 WL GND PULSE(0 {VDD} {T_read} {T_rise} {T_rise} 2n 10n)
+XM6 OUT SE BL BL sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM9 net1 SE BLB BLB sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
 **** begin user architecture code
 
 
