@@ -13,7 +13,7 @@ def main(data_file: Path, plot_dir: Path, plot_name: str, show: bool):
 
     plt.figure(figsize=(8,5))
     
-    df[["v(BL)", "v(BLB)", "v(SE)", "v(OUT)"]].plot(ax=plt.gca())
+    df[["v(BL)", "v(BLB)", "v(WL)", "v(SE)", "v(OUT)"]].plot(ax=plt.gca())
 
     plt.xlabel("Time [ns]")
     plt.ylabel("Voltage [V]")
