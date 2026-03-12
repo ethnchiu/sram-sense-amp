@@ -1,7 +1,7 @@
 ** sch_path: /foss/designs/sram-sense-amp/xschem/sram-sense-amp.sch
 **.subckt sram-sense-amp
 V1 VDD GND {VDD}
-V4 SE GND PULSE(0 {VDD} {T_read + D_se} {T_rise} {T_rise} 1n 10n)
+V4 SE GND 0
 XM8 net2 SE GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 XM1 OUT net1 net2 net2 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 XM3 net1 OUT VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
@@ -9,34 +9,52 @@ XM2 OUT net1 VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
 XM4 net1 OUT net2 net2 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 XM5 q qbar VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
 XM7 qbar q VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
-XM10 q qbar GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
-XM11 qbar q GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
+XM10 q qbar GND GND sg13_lv_nmos w=2*0.15u l=0.13u ng=1 m=1
+XM11 qbar q GND GND sg13_lv_nmos w=2*0.15u l=0.13u ng=1 m=1
 XM12 BL WL q GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 XM13 BLB WL qbar GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
 C1 BL GND 0.5p m=1
 C2 BLB GND 0.5p m=1
-V5 WL GND PULSE(0 {VDD} {T_read} {T_rise} {T_rise} 2n 10n)
+V5 WL GND PWL( 0n 0 19n 0 20n {VDD} 24n {VDD} 24.2n 0 59n 0 60n {VDD} 66n {VDD} 66.2n 0 99n 0 100n {VDD} 104n {VDD} 104.2n 0 139n 0
++ 140n {VDD} 146n {VDD} 146.2n 0 180n 0
+)
 XM6 OUT SE BL VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
 XM9 net1 SE BLB VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM14 BL PRE_N VDD VDD sg13_lv_pmos w=3*0.15u l=0.13u ng=1 m=1
+XM15 BLB PRE_N VDD VDD sg13_lv_pmos w=3*0.15u l=0.13u ng=1 m=1
+V2 PRE_N GND PWL( 0n 0 10n 0 {10n + tr} {VDD} 39.999n {VDD} 40n 0 50n 0 {50n + tr} {VDD} 79.999n {VDD} 80n 0 90n 0 {90n + tr} {VDD}
++ 119.999n {VDD} 120n 0 130n 0 {130n + tr} {VDD} 180n {VDD}
+)
+XM18 BLB WE net5 net5 sg13_lv_nmos w=24*0.15u l=0.13u ng=1 m=1
+XM19 BL WE net6 net6 sg13_lv_nmos w=24*0.15u l=0.13u ng=1 m=1
+XM20 net5 net4 GND GND sg13_lv_nmos w=12*0.15u l=0.13u ng=1 m=1
+XM21 net6 net3 GND GND sg13_lv_nmos w=12*0.15u l=0.13u ng=1 m=1
+XM24 net3 net4 VDD VDD sg13_lv_pmos w=12*0.15u l=0.13u ng=1 m=1
+XM25 net3 net4 GND GND sg13_lv_nmos w=6*0.15u l=0.13u ng=1 m=1
+XM26 net4 Din VDD VDD sg13_lv_pmos w=18*0.15u l=0.13u ng=1 m=1
+XM27 net4 Din GND GND sg13_lv_nmos w=9*0.15u l=0.13u ng=1 m=1
+V3 WE GND PWL( 0n 0 19n 0 19.2n {VDD} 24.2n {VDD} 24.4n 0 99n 0 99.2n {VDD} 104.2n {VDD} 104.4n 0 180n 0
+)
+V6 Din GND PWL( 0n {VDD} 80n {VDD} 95n 0 180n 0
+)
 **** begin user architecture code
 
 
 .lib cornerMOSlv.lib mos_tt
 
 .param VDD=1.2
-.param T_read=2n
-.param T_rise=100p
-.param D_se=500p
+.param tr=50p
 
-.ic v(BL)=VDD v(BLB)=VDD v(Q)=VDD V(qbar)=0
+.ic v(Q)=0 V(qbar)=1
 
-.tran 0.1p 10n
+.tran 0.1n 180n
 
 .control
 run
 set wr_singlescale
 set wr_vecnames
-wrdata data.txt v(BL) v(BLB) v(WL) v(SE) v(OUT)
+*wrdata data.txt v(BL) v(BLB) v(WL) v(SE) v(OUT)
+wrdata data.txt v(BL) v(BLB) v(WL) v(WE) v(PRE_N) v(Din) v(q) v(qbar)
 .endc
 
 

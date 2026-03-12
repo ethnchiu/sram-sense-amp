@@ -11,14 +11,33 @@ def main(data_file: Path, plot_dir: Path, plot_name: str, show: bool):
     df["time_ns"] = df["time"] * 1e9
     df = df.set_index("time_ns")
 
-    plt.figure(figsize=(8,5))
+    #plt.figure(figsize=(8,5))
     
-    df[["v(BL)", "v(BLB)", "v(WL)", "v(SE)", "v(OUT)"]].plot(ax=plt.gca())
+    #df[["v(BL)", "v(BLB)", "v(WL)", "v(SE)", "v(OUT)"]].plot(ax=plt.gca())
+    #df[["v(BL)", "v(BLB)", "v(WL)", "v(WE)", "v(PRE_N)", "v(Din)", "v(q)", "v(qbar)"]].plot(ax=plt.gca())
+    signals = ["v(BL)", "v(BLB)", "v(WL)", "v(WE)",
+           "v(PRE_N)", "v(Din)", "v(q)", "v(qbar)"]
 
-    plt.xlabel("Time [ns]")
-    plt.ylabel("Voltage [V]")
-    plt.title("SRAM Sense Amplifier Transient Analysis")
-    plt.legend()
+    axes = df[signals].plot(
+        subplots=True,
+        figsize=(10, 12),
+        sharex=True,
+        layout=(len(signals), 1),
+        legend=False
+    )
+
+    for ax, signal in zip(axes.flatten(), signals):
+        ax.set_ylabel("V")
+        ax.set_title(signal)
+        ax.grid(True)
+
+    #plt.xlabel("Time [ns]")
+    plt.tight_layout()
+
+    #plt.xlabel("Time [ns]")
+    #plt.ylabel("Voltage [V]")
+    #plt.title("SRAM Sense Amplifier Transient Analysis")
+    #plt.legend()
     plt.grid(True)
 
     plot_dir  = plot_dir / f"{plot_name}.png"
