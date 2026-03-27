@@ -1,0 +1,150 @@
+** sch_path: /foss/designs/sram-sense-amp/xschem/offset_voltage_tester/offset-voltage-tester.sch
+**.subckt offset-voltage-tester
+XM8 net1 SE GND GND sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
+XM1 Voutp Voutn net1 net1 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
+XM3 Voutn Voutp VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM2 Voutp Voutn VDD VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM4 Voutn Voutp net1 net1 sg13_lv_nmos w=0.15u l=0.13u ng=1 m=1
+XM6 Voutp SE BL VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+XM9 Voutn SE BLB VDD sg13_lv_pmos w=0.15u l=0.13u ng=1 m=1
+* noconn SE
+* noconn BLB
+* noconn BL
+C1 BL GND 0.5p m=1
+C2 BLB GND 0.5p m=1
+**** begin user architecture code
+
+
+
+.lib cornerMOSlv.lib mos_tt_mismatch
+
+.param VDD=1.2
+.param VCM=1.2
+.param vind=0
+
+.param TPER=10n
+.param TSE_DLY=4n
+.param TSE_W=3n
+.param TR=100p
+.param TF=100p
+.param TEVAL=6.5n
+
+VDD_S VDD 0 {VDD}
+VSE SE 0 PULSE(0 {VDD} {TSE_DLY} {TR} {TF} {TSE_W} {TPER})
+* SE Pulse:
+* 0V -> VDD @ TSE_DLY
+* Stays high for TSE_W
+* Repeats every TPER
+
+B_BLDRV BLDRV 0 V = {VCM + vind / 2}
+B_BLBDRV BLBDRV 0 V = {VCM - vind / 2}
+
+RBL BLDRV BL 50
+RBLB BLBDRV BLB 50
+
+.control
+set noaskquit
+set numdgt=10
+
+let vin_min = -0.005
+let vin_max =  0.005
+let nbit = 12
+let voutd_th = 0
+
+let tstop = 10n
+let teval = 6.5n
+
+let vind_range = vin_max - vin_min
+let vind_dir = 1
+let reset_state = 1
+let count = 1
+let vind_sar_val = vin_min + vind_range / 2
+let vind_val = vin_min
+let vos_r = 0
+let vos_f = 0
+let vod_last = 0
+let lsb = 0
+let vos_candidate = 0
+
+while 1
+
+  if reset_state = 1
+    if vind_dir = 1
+      let vind_val = vin_min
+    else
+      let vind_val = vin_max
+    end
+
+    alterparam vind = $&vind_val
+    reset
+    tran 5p $&tstop
+    meas tran vop FIND v(voutp) AT=$&teval
+    meas tran von FIND v(voutn) AT=$&teval
+    let vod_last = $&vop - $&von
+
+    let reset_state = 0
+    continue
+  end
+
+  let vind_val = vind_sar_val
+  alterparam vind = $&vind_val
+  reset
+  tran 5p $&tstop
+  meas tran vop FIND v(voutp) AT=$&teval
+  meas tran von FIND v(voutn) AT=$&teval
+  let vod_last = $&vop - $&von
+
+  if count < nbit
+    let count = count + 1
+
+    if vod_last > voutd_th
+      let vind_sar_val = vind_sar_val - vind_range / (2^count)
+      if vind_dir = 1
+        let reset_state = 1
+      end
+    else
+      let vind_sar_val = vind_sar_val + vind_range / (2^count)
+      if vind_dir = 0
+        let reset_state = 1
+      end
+    end
+
+  else
+    let lsb = vind_range / (2^count)
+
+    if vod_last > voutd_th
+      let vos_candidate = vind_sar_val - lsb/2
+    else
+      let vos_candidate = vind_sar_val + lsb/2
+    end
+
+    if vind_dir = 1
+      let vos_r = $&vos_candidate
+
+      let vind_dir = 0
+      let count = 1
+      let vind_sar_val = vin_min + vind_range / 2
+      let reset_state = 1
+      let vind_val = vin_max
+      continue
+    else
+      let vos_f = $&vos_candidate
+      break
+    end
+  end
+
+end
+
+let vos_avg = (vos_r + vos_f) / 2
+let vos_diff = vos_r - vos_f
+
+echo 'vos_r = ' $&vos_r
+echo 'vos_f = ' $&vos_f
+echo 'diff  = ' $&vos_diff
+.endc
+
+
+**** end user architecture code
+**.ends
+.GLOBAL GND
+.end
