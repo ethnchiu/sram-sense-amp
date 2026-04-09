@@ -60,7 +60,7 @@ C {lab_pin.sym} 260 -90 0 1 {name=p5 sig_type=std_logic lab=BLB}
 C {lab_pin.sym} -60 80 0 0 {name=p6 sig_type=std_logic lab=SE}
 C {sg13g2_pr/sg13_lv_nmos.sym} -20 80 0 0 {name=M8
 l=0.13u
-w=0.15u
+w=4*0.15u
 ng=1
 m=1
 model=sg13_lv_nmos
@@ -68,7 +68,7 @@ spiceprefix=X
 }
 C {sg13g2_pr/sg13_lv_nmos.sym} -60 -10 0 1 {name=M1
 l=0.13u
-w=0.15u
+w=5*0.15u
 ng=1
 m=1
 model=sg13_lv_nmos
@@ -92,7 +92,7 @@ spiceprefix=X
 }
 C {sg13g2_pr/sg13_lv_nmos.sym} 60 -10 0 0 {name=M4
 l=0.13u
-w=0.15u
+w=5*0.15u
 ng=1
 m=1
 model=sg13_lv_nmos
@@ -121,9 +121,13 @@ C {lab_pin.sym} 210 20 0 1 {name=p21 sig_type=std_logic lab=VDD}
 C {lab_pin.sym} 80 -50 0 1 {name=p1 sig_type=std_logic lab=Voutn}
 C {simulator_commands.sym} 350 -120 0 0 {name=COMMANDS
 simulator=ngspice
-only_toplevel=false 
+only_toplevel=true 
 value="
 .lib cornerMOSlv.lib mos_tt_mismatch
+
+.param mm_ok=1
+.param mc_ok=1
+.param temp=27
 
 .param VDD=1.2
 .param VCM=1.2
@@ -150,104 +154,39 @@ RBL BLDRV BL 50
 RBLB BLBDRV BLB 50
 
 .control
+
 set noaskquit
 set numdgt=10
 
-let vin_min = -0.005
-let vin_max =  0.005
-let nbit = 12
-let voutd_th = 0
+let mc_runs = 5
+let run = 0
 
-let tstop = 10n
-let teval = 6.5n
+set curplot = new
+set scratch = $curplot
+setplot $scratch
 
-let vind_range = vin_max - vin_min
-let vind_dir = 1
-let reset_state = 1
-let count = 1
-let vind_sar_val = vin_min + vind_range / 2
-let vind_val = vin_min
-let vos_r = 0
-let vos_f = 0
-let vod_last = 0
-let lsb = 0
-let vos_candidate = 0
+let vos_r_vec = unitvec(mc_runs)
+let vos_f_vec = unitvec(mc_runs)
 
-while 1
-
-  if reset_state = 1
-    if vind_dir = 1
-      let vind_val = vin_min
-    else
-      let vind_val = vin_max
-    end
-
-    alterparam vind = $&vind_val
-    reset
-    tran 5p $&tstop
-    meas tran vop FIND v(voutp) AT=$&teval
-    meas tran von FIND v(voutn) AT=$&teval
-    let vod_last = $&vop - $&von
-
-    let reset_state = 0
-    continue
-  end
-
-  let vind_val = vind_sar_val
-  alterparam vind = $&vind_val
-  reset
-  tran 5p $&tstop
-  meas tran vop FIND v(voutp) AT=$&teval
-  meas tran von FIND v(voutn) AT=$&teval
-  let vod_last = $&vop - $&von
-
-  if count < nbit
-    let count = count + 1
-
-    if vod_last > voutd_th
-      let vind_sar_val = vind_sar_val - vind_range / (2^count)
-      if vind_dir = 1
-        let reset_state = 1
-      end
-    else
-      let vind_sar_val = vind_sar_val + vind_range / (2^count)
-      if vind_dir = 0
-        let reset_state = 1
-      end
-    end
-
-  else
-    let lsb = vind_range / (2^count)
-
-    if vod_last > voutd_th
-      let vos_candidate = vind_sar_val - lsb/2
-    else
-      let vos_candidate = vind_sar_val + lsb/2
-    end
-
-    if vind_dir = 1
-      let vos_r = $&vos_candidate
-
-      let vind_dir = 0
-      let count = 1
-      let vind_sar_val = vin_min + vind_range / 2
-      let reset_state = 1
-      let vind_val = vin_max
-      continue
-    else
-      let vos_f = $&vos_candidate
-      break
-    end
-  end
-
+dowhile run < mc_runs
+    source /foss/designs/sram-sense-amp/xschem/offset_voltage_tester/offset_voltage_tester.sp
+    let run = run + 1
 end
 
-let vos_avg = (vos_r + vos_f) / 2
-let vos_diff = vos_r - vos_f
+wrdata vos_results.csv \{$scratch\}.vos_r_vec \{$scratch\}.vos_f_vec
+write vos_results.raw
 
-echo 'vos_r = ' $&vos_r
-echo 'vos_f = ' $&vos_f
-echo 'diff  = ' $&vos_diff
+echo
+print \{$scratch\}.vos_r_vec
+print \{$scratch\}.vos_f_vec
+
+
+*let vos_avg = (vos_r + vos_f) / 2
+*let vos_diff = vos_r - vos_f
+
+*echo 'vos_r = ' $&vos_r
+*echo 'vos_f = ' $&vos_f
+*echo 'diff  = ' $&vos_diff
 .endc
 "}
 C {noconn.sym} 210 -120 1 0 {name=l1}
