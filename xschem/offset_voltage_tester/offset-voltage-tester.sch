@@ -160,33 +160,27 @@ RBLB BLBDRV BLB 50
 set noaskquit
 set numdgt=10
 
-let mc_runs = 3
+let mc_runs = 5
 let run = 0
 
-set curplot = new
+setplot new
 set scratch = $curplot
-setplot $scratch
 
-let vos_r_vec = unitvec(mc_runs)
-let vos_f_vec = unitvec(mc_runs)
-let indices = unitvec(mc_runs)
+* wrdata settings
+set wr_vecnames
 
 dowhile run < mc_runs
     source /foss/designs/sram-sense-amp/xschem/offset_voltage_tester/offset_voltage_tester.sp
-    let indices[run] = run
+    
+    setscale run
+    wrdata vos_r.out vos_r
+    wrdata vos_f.out vos_f
     let run = run + 1
+    unset wr_vecnames
+    set appendwrite
 end
 
-setscale indices
-set wr_vecnames
-wrdata vos_r.out vos_r_vec
-wrdata vos_f.out vos_f_vec
-
-write vos_results.raw
-
-echo
-print \{$scratch\}.vos_r_vec
-print \{$scratch\}.vos_f_vec
+*write vos_results.raw
 
 
 *let vos_avg = (vos_r + vos_f) / 2

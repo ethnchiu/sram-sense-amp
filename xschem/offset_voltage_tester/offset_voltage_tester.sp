@@ -39,6 +39,7 @@ while 1
 
     setplot $scratch
     let vod_last = {$dt}.vop - {$dt}.von
+    destroy $dt
     let reset_state = 0
     continue
   end
@@ -53,6 +54,7 @@ while 1
 
   setplot $scratch
   let vod_last = {$dt}.vop - {$dt}.von
+  destroy $dt
 
   if count < nbit
     let count = count + 1
@@ -80,7 +82,7 @@ while 1
 
     if vind_dir = 1
       let vos_r = vos_candidate
-      let vos_r_vec[run] = $&vos_r
+      let vos_r = $&vos_r
 
       let vind_dir = 0
       let count = 1
@@ -90,7 +92,7 @@ while 1
       continue
     else
       let vos_f = vos_candidate
-      let vos_f_vec[run] = $&vos_f
+      let vos_f = $&vos_f
       break
     end
   end
