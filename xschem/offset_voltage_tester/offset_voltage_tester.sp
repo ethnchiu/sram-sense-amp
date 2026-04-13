@@ -2,6 +2,7 @@
 
 set tstop = 10n
 set teval = 6.5n
+*set teval = 3n
 
 setplot $scratch
 let vin_min = -0.005

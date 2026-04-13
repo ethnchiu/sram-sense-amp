@@ -34,6 +34,8 @@ C2 BLB GND 0.5p m=1
 .param TEVAL=6.5n
 
 VDD_S VDD 0 {VDD}
+*VSE SE 0 {VDD}
+* Force SE high
 VSE SE 0 PULSE(0 {VDD} {TSE_DLY} {TR} {TF} {TSE_W} {TPER})
 * SE Pulse:
 * 0V -> VDD @ TSE_DLY
@@ -51,7 +53,7 @@ RBLB BLBDRV BLB 50
 set noaskquit
 set numdgt=10
 
-let mc_runs = 5
+let mc_runs = 3
 let run = 0
 
 set curplot = new
@@ -60,13 +62,19 @@ setplot $scratch
 
 let vos_r_vec = unitvec(mc_runs)
 let vos_f_vec = unitvec(mc_runs)
+let indices = unitvec(mc_runs)
 
 dowhile run < mc_runs
     source /foss/designs/sram-sense-amp/xschem/offset_voltage_tester/offset_voltage_tester.sp
+    let indices[run] = run
     let run = run + 1
 end
 
-wrdata vos_results.csv {$scratch}.vos_r_vec {$scratch}.vos_f_vec
+setscale indices
+set wr_vecnames
+wrdata vos_r.out vos_r_vec
+wrdata vos_f.out vos_f_vec
+
 write vos_results.raw
 
 echo
