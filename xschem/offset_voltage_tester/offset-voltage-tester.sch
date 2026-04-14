@@ -160,7 +160,7 @@ RBLB BLBDRV BLB 50
 set noaskquit
 set numdgt=10
 
-let mc_runs = 5
+let mc_runs = 500
 let run = 0
 
 setplot new
@@ -179,16 +179,6 @@ dowhile run < mc_runs
     unset wr_vecnames
     set appendwrite
 end
-
-*write vos_results.raw
-
-
-*let vos_avg = (vos_r + vos_f) / 2
-*let vos_diff = vos_r - vos_f
-
-*echo 'vos_r = ' $&vos_r
-*echo 'vos_f = ' $&vos_f
-*echo 'diff  = ' $&vos_diff
 .endc
 "}
 C {noconn.sym} 210 -120 1 0 {name=l1}
