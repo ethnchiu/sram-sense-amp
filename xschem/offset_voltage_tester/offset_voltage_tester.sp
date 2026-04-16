@@ -5,9 +5,9 @@ set teval = 6.5n
 *set teval = 3n
 
 setplot $scratch
-let vin_min = -0.005
-let vin_max =  0.005
-let nbit = 15
+let vin_min = -0.05
+let vin_max =  0.05
+let nbit = 10
 let voutd_th = 0
 
 let vind_range = vin_max - vin_min

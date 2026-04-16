@@ -160,7 +160,7 @@ RBLB BLBDRV BLB 50
 set noaskquit
 set numdgt=10
 
-let mc_runs = 500
+let mc_runs = 100
 let run = 0
 
 setplot new

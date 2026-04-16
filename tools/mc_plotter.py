@@ -11,7 +11,9 @@ def main(file: str, name: str, rename: str, out: str, title: str):
 
     df[name] *= 1000
 
-    df[name].plot.hist(edgecolor="k")
+    fig, ax = plt.subplots()
+
+    ax = df[name].plot.hist(edgecolor="k")
 
     # Retrieve and display count, mean, and standard deviation
     count = df[name].count()
@@ -26,16 +28,16 @@ def main(file: str, name: str, rename: str, out: str, title: str):
         rf'$\sigma = {sigma:.1f}\,\mathrm{{mV}}$'
     )
 
-    plt.text(-5.25, 14.5, text)
+    ax.text(0, 1, text, horizontalalignment="left", verticalalignment="top", transform=ax.transAxes)
 
     if rename:
         name = rename
 
-    plt.xlabel(f"{name} [mV]")
-    plt.ylabel("Frequency")
+    ax.set_xlabel(f"{name} [mV]")
+    ax.set_ylabel("Frequency")
 
     if title:
-        plt.title(title)
+        ax.set_title(title)
 
     if out:
         out_path: Path = Path(out)
