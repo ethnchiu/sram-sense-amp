@@ -130,8 +130,8 @@ value="
 .param temp=27
 
 .param VDD=1.2
-.param VCM=1.2
-.param vind=0
+.param VCM=1.175
+.param VIND_INIT=0
 
 .param TPER=10n
 .param TSE_DLY=4n
@@ -141,16 +141,17 @@ value="
 .param TEVAL=6.5n
 
 VDD_S VDD 0 \{VDD\}
-*VSE SE 0 \{VDD\}
-* Force SE high
-VSE SE 0 PULSE(0 \{VDD\} \{TSE_DLY\} \{TR\} \{TF\} \{TSE_W\} \{TPER\})
+
 * SE Pulse:
 * 0V -> VDD @ TSE_DLY
 * Stays high for TSE_W
 * Repeats every TPER
+VSE SE 0 PULSE(0 \{VDD\} \{TSE_DLY\} \{TR\} \{TF\} \{TSE_W\} \{TPER\})
 
-B_BLDRV BLDRV 0 V = \{VCM + vind / 2\}
-B_BLBDRV BLBDRV 0 V = \{VCM - vind / 2\}
+VVIND VIND_CTRL 0 \{VIND_INIT\}
+
+B_BLDRV BLDRV 0 V = \{VCM + v(VIND_CTRL) / 2\}
+B_BLBDRV BLBDRV 0 V = \{VCM - v(VIND_CTRL) / 2\}
 
 RBL BLDRV BL 50
 RBLB BLBDRV BLB 50
@@ -159,26 +160,36 @@ RBLB BLBDRV BLB 50
 
 set noaskquit
 set numdgt=10
+set wr_singlescale
+set wr_vecnames
 
-let mc_runs = 100
-let run = 0
+let mc_runs = 500
+
+let vin_min = -0.05
+let vin_max = 0.05
+let vind_range = vin_max - vin_min
+let nbit = 10
+let voutd_th = 0
+
+let tstep = 20p
+let tper = 10n
+let teval = 6.5n
+
+let max_cycles = 4 * nbit + 4
+let tstop = max_cycles * tper
 
 setplot new
 set scratch = $curplot
 
-* wrdata settings
-set wr_vecnames
-
+let run = 0
 dowhile run < mc_runs
     source /foss/designs/sram-sense-amp/xschem/offset_voltage_tester/offset_voltage_tester.sp
     
-    setscale run
-    wrdata vos_r.out vos_r
-    wrdata vos_f.out vos_f
     let run = run + 1
-    unset wr_vecnames
-    set appendwrite
 end
+
+rusage time
+
 .endc
 "}
 C {noconn.sym} 210 -120 1 0 {name=l1}
